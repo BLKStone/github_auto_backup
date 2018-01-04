@@ -39,7 +39,7 @@ class BackupExcelReader(object):
         self.path = path
 
     def show_sheets(self, sheets):
-        print '[*] 查看sheet列表: [',
+        print u'[*] 查看sheet列表: [',
         for sheet in sheets:
             print sheet+',',
         print ']'
@@ -51,14 +51,14 @@ class BackupExcelReader(object):
 
     def get_urls_list(self):
         path = self.path
-        print '[*] 备份清单路径：', path
+        print u'[*] BackupExcelReader 的备份清单：', path
         wb = openpyxl.load_workbook(filename=path)
         sheets = wb.get_sheet_names()
 
         urls_list = []
         self.show_sheets(sheets)
         for sheet_name in sheets:
-            print '[*] 获取', sheet_name, '(sheet) 中的URL'
+            print u'[*] 获取', sheet_name, u'(sheet) 中的URL'
             ws = wb.get_sheet_by_name(sheet_name)  # 获取特定的 worksheet
             url_list = []
             # 获取表格所有行和列，两者都是可迭代的
@@ -69,6 +69,10 @@ class BackupExcelReader(object):
                     continue
                 # print type(row)
                 # print '[+] git clone', row[1].value
+                if row[1].value is None:
+                    continue
+                if 'http' not in row[1].value:
+                    continue
                 url_list.append(row[1].value)
 
             urls_list.append(url_list)
@@ -96,7 +100,7 @@ def repo_backup():
     urls_list = backup_reader.get_urls_list()
     sheets = backup_reader.get_sheet_names()
     for idx, urls in enumerate(urls_list):
-        print '[*] 正在处理 sheet', sheets[idx]
+        print u'[*] 正在处理 sheet', sheets[idx]
         for url in urls:
             print '[+] git clone', url
             subprocess.call(["git", "clone", url])
@@ -116,32 +120,29 @@ def repo_update():
 # backup (git clone)
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='[v] Github Repos Auto Backup v0.1')
-    print arguments
+    # print arguments
 
-    if arguments['<source>'] is None:
+    if arguments['<source>'] is not None:
         backup_list_path = arguments['<source>']
     else:
-        backup_list_path = 'D:\\pydev\\github_auto_backup\\backup_list.xlsx'
+        backup_list_path = os.path.join(os.getcwd(), 'backup_list.xlsx')
 
-    if '--xlsx' in arguments:
+    if arguments['--xlsx'] is not None:
         dest_path = arguments['--xlsx']
     else:
         dest_path = 'D:\github_backup'
 
     backup_reader = BackupExcelReader(path=backup_list_path)
 
-    print(backup_list_path)
-    print(dest_path)
+    print u'[*] 备份清单路径:', backup_list_path
+    print u'[*] 备份目标路径:', dest_path
 
     os.chdir(dest_path)
 
-    if 'update' in arguments:
+    if arguments['update']:
+        print '[*] Starting Update ...'
         repo_update()
 
-    if 'backup' in arguments:
-        # repo_backup()
-        pass
-
-    # repo_backup()
-
-
+    if arguments['backup']:
+        print '[*] Starting Backup ...'
+        repo_backup()
