@@ -23,8 +23,6 @@ Options:
   --version     Show version.
   --dst=<destination>     github repos backup path.
   --xlsx=<source>     backup list (excel)
-  --moored      Moored (anchored) mine.
-  --drifting    Drifting mine.
 
 """
 
@@ -119,7 +117,7 @@ def repo_update():
 # update (git pull)
 # backup (git clone)
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='[v] Github Repos Auto Backup v0.1')
+    arguments = docopt(__doc__, version='[v] Github Repos Auto Backup v0.12')
     # print arguments
 
     if arguments['<source>'] is not None:
